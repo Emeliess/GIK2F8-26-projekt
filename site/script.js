@@ -1,131 +1,69 @@
-recipeForm.title.addEventListener("keyup", (e) => validateField(e.target));
-recipeForm.title.addEventListener("blur", (e) => validateField(e.target));
-recipeForm.description.addEventListener("input", (e) => validateField(e.target));
-recipeForm.description.addEventListener("blur", (e) => validateField(e.target));
-
-recipeForm.addEventListener("submit", onSubmit);
-
+// Hämtar element där recepten ska läggas
 const recipesElement = document.getElementById("recipes");
 
-let titleValid = true;
-let descriptionValid = true;
+// Lägger till eventlistener som lyssnar om man tryck på Spara-knappen
+recipeForm.addEventListener("submit", onSubmit)
 
+// Instantierar API för att prata med servern
 const api = new Api("http://localhost:5000/coffee");
 
-function validateField(field) {
-  const { name, value } = field;
-
-  let = validationMessage = "";
-
-  switch (name) {
-    case "title": {
-      if (value.length < 2) {
-        titleValid = false;
-        validationMessage = "Fältet 'Titel' måste innehålla minst 2 tecken.";
-      } else if (value.length > 100) {
-        titleValid = false;
-        validationMessage =
-          "Fältet 'Titel' får inte innehålla mer än 100 tecken.";
-      } else {
-        titleValid = true;
-      }
-      break;
-    }
-    case "description": {
-      if (value.length > 500) {
-        descriptionValid = false;
-        validationMessage =
-          "Fältet 'Beskrivning' får inte innehålla mer än 500 tecken.";
-      } else {
-        descriptionValid = true;
-      }
-      break;
-    }
-  }
-
-  field.previousElementSibling.innerText = validationMessage;
-  field.previousElementSibling.classList.remove("hidden");
-}
-
+// Funktion som anropas när man sparar
 function onSubmit(e) {
+  // Bootstrap verkar strula med att inte ladda om sidan vid knapptryckning
   e.preventDefault();
-  //if (titleValid && descriptionValid && dueDateValid) {
-    saveRecipe();
-  //}
+  saveRecipe();
 }
 
+// Funktion som skapar ett receptobjekt som skickas till servern via API, ritar upp den nya listan
 function saveRecipe() {
+  var title = recipeForm[0].value;
+  var description = recipeForm[1].value;
+
   const recipe = {
-    title: recipeForm.title.value,
-    recipe: recipeForm.description.value,
+    title: title,
+    description: description
   };
 
   api.create(recipe).then((result) => {
-    var validations = document.getElementById("validationErrors");
-
-    validations.innerHTML = "";
-    if (result && result.id) {
+    if (result) {
       renderList();
-    } else {
-      renderValidationErrors(result, validations);
     }
   });
 }
 
+// Ritar ut recepten i listan
 function renderList() {
   api.getAll().then((recipes) => {
     recipesElement.innerHTML = "";
-    recipes.sort(function (b, a) {
-      return new Date(b.dueDate) - new Date(a.dueDate);
-    });
     if (recipes && recipes.length > 0) {
       recipes.forEach((r) => {
-        todoListElement.insertAdjacentHTML("beforeend", renderTask(r));
-        document
-          .getElementById("recipeCompleted" + r.id)
-          .addEventListener("click", () => completedClicked(r));
-        checkCompleted(r);
+        recipesElement.insertAdjacentHTML("beforeend", renderRecipes(r));
       });
     }
   });
 }
 
-function renderTask({ id, title, description }) {
+// Returnerar HTML för hur recepten ska se ut på sidan
+function renderRecipes({ id, title, description }) {
   let html = `
       <div class="card col-3" style="width: 18rem;">
       <!-- <img src="..." class="card-img-top" alt="..."> -->
       <div class="card-body">
         <h5 class="card-title">${title}</h5>
         <p class="card-text">${description}</p>
+        <input class="btn btn-danger" onclick="deleteRecipe(${id})" value="Ta bort" />
       </div>
     </div>`;
 
   return html;
 }
 
-function renderValidationErrors(errors, validations) {
-  let html = `
-    <ul>
-  `;
-
-  for (const key in errors) {
-    html += `<li class="text-red-900">`;
-    html += errors[key];
-    html += "</li>";
-  }
-
-  html += `
-  </ul>`;
-
-  validations.insertAdjacentHTML("beforeend", html);
-}
-
-
-function deleteTask(id) {
-  api.remove(id).then((result) => {
+// Tar emot ett ID och skickar ett delete-request till servern via API:et
+function deleteRecipe(id) {
+  api.remove(id).then(() => {
     renderList();
   });
 }
 
-
+// Hämtar och visar recepten när sidan laddas
 renderList();
