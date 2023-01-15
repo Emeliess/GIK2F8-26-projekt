@@ -1,17 +1,14 @@
-todoForm.title.addEventListener("keyup", (e) => validateField(e.target));
-todoForm.title.addEventListener("blur", (e) => validateField(e.target));
-todoForm.description.addEventListener("input", (e) => validateField(e.target));
-todoForm.description.addEventListener("blur", (e) => validateField(e.target));
-todoForm.dueDate.addEventListener("input", (e) => validateField(e.target));
-todoForm.dueDate.addEventListener("blur", (e) => validateField(e.target));
+recipeForm.title.addEventListener("keyup", (e) => validateField(e.target));
+recipeForm.title.addEventListener("blur", (e) => validateField(e.target));
+recipeForm.description.addEventListener("input", (e) => validateField(e.target));
+recipeForm.description.addEventListener("blur", (e) => validateField(e.target));
 
-todoForm.addEventListener("submit", onSubmit);
+recipeForm.addEventListener("submit", onSubmit);
 
-const todoListElement = document.getElementById("todoList");
+const recipesElement = document.getElementById("recipes");
 
 let titleValid = true;
 let descriptionValid = true;
-let dueDateValid = true;
 
 const api = new Api("http://localhost:5000/coffee");
 
@@ -44,15 +41,6 @@ function validateField(field) {
       }
       break;
     }
-    case "dueDate": {
-      if (value.length === 0) {
-        dueDateValid = false;
-        validationMessage = "Fältet 'Slutförd senast' är obligatorisk.";
-      } else {
-        dueDateValid = true;
-      }
-      break;
-    }
   }
 
   field.previousElementSibling.innerText = validationMessage;
@@ -61,20 +49,18 @@ function validateField(field) {
 
 function onSubmit(e) {
   e.preventDefault();
-  if (titleValid && descriptionValid && dueDateValid) {
-    saveTask();
-  }
+  //if (titleValid && descriptionValid && dueDateValid) {
+    saveRecipe();
+  //}
 }
 
-function saveTask() {
-  const task = {
-    title: todoForm.title.value,
-    description: todoForm.description.value,
-    dueDate: todoForm.dueDate.value,
-    completed: false
+function saveRecipe() {
+  const recipe = {
+    title: recipeForm.title.value,
+    recipe: recipeForm.description.value,
   };
 
-  api.create(task).then((result) => {
+  api.create(recipe).then((result) => {
     var validations = document.getElementById("validationErrors");
 
     validations.innerHTML = "";
@@ -87,42 +73,32 @@ function saveTask() {
 }
 
 function renderList() {
-  api.getAll().then((tasks) => {
-    todoListElement.innerHTML = "";
-    tasks.sort(function (b, a) {
+  api.getAll().then((recipes) => {
+    recipesElement.innerHTML = "";
+    recipes.sort(function (b, a) {
       return new Date(b.dueDate) - new Date(a.dueDate);
     });
-    if (tasks && tasks.length > 0) {
-      tasks.forEach((task) => {
-        todoListElement.insertAdjacentHTML("beforeend", renderTask(task));
+    if (recipes && recipes.length > 0) {
+      recipes.forEach((r) => {
+        todoListElement.insertAdjacentHTML("beforeend", renderTask(r));
         document
-          .getElementById("taskCompleted" + task.id)
-          .addEventListener("click", () => completedClicked(task));
-        checkCompleted(task);
+          .getElementById("recipeCompleted" + r.id)
+          .addEventListener("click", () => completedClicked(r));
+        checkCompleted(r);
       });
     }
   });
 }
 
-function renderTask({ id, title, description, dueDate }) {
+function renderTask({ id, title, description }) {
   let html = `
-    <li class="select-none mt-2 py-2 border-b border-amber-300">
-      <div class="flex items-center">
-        <div>
-          <input type="checkbox" class="mr-5" id="taskCompleted${id}" name="taskCompleted${id}">
-        </div>
-        <h3 id="titel${id}" class="flex-1 text-xl font-bold text-pink-800 uppercase">${title}</h3>
-        <div>
-          <span>${dueDate}</span>
-          <button onclick="deleteTask(${id})" class="inline-block bg-red-500 text-xs text-black-900 hover:bg-red-400 px-3 py-1 rounded-md ml-2">Ta bort</button>
-        </div>
-      </div>`;
-  description &&
-    (html += `
-      <p class="ml-8 mt-2 text-xs italic">${description}</p>
-  `);
-  html += `
-    </li>`;
+      <div class="card col-3" style="width: 18rem;">
+      <!-- <img src="..." class="card-img-top" alt="..."> -->
+      <div class="card-body">
+        <h5 class="card-title">${title}</h5>
+        <p class="card-text">${description}</p>
+      </div>
+    </div>`;
 
   return html;
 }
@@ -144,11 +120,6 @@ function renderValidationErrors(errors, validations) {
   validations.insertAdjacentHTML("beforeend", html);
 }
 
-function completedClicked(task) {
-  task.completed = !task.completed;
-  checkCompleted(task);
-  api.completedClicked(task);
-}
 
 function deleteTask(id) {
   api.remove(id).then((result) => {
@@ -156,13 +127,5 @@ function deleteTask(id) {
   });
 }
 
-function checkCompleted(task) {
-  var el = document.getElementById("titel" + task.id);
-  if (task.completed) el.classList.add("line-through", "lt-width");
-  else el.classList.remove("line-through", "lt-width");
-
-  var box = document.getElementById("taskCompleted" + task.id);
-  box.checked = task.completed;
-}
 
 renderList();

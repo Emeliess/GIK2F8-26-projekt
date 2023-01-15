@@ -43,27 +43,29 @@
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-              <div class="input-group mb-3">
-                <span class="input-group-text" id="basic-addon1">Titel</span>
-                <input type="text" class="form-control" placeholder="Titel" aria-label="Titel" aria-describedby="basic-addon1">
-              </div>
-              
-              
-              <div class="input-group">
-                <span class="input-group-text">Recept</span>
-                <textarea class="form-control" aria-label="With textarea"></textarea>
-              </div>
+              <form id="recipeForm" name="recipeForm">
+                <div class="input-group mb-3">
+                  <span class="input-group-text" id="basic-addon1">Titel</span>
+                  <input type="text" class="form-control" placeholder="Titel" aria-label="Titel" aria-describedby="basic-addon1">
+                </div>
+                
+                
+                <div class="input-group">
+                  <span class="input-group-text">Recept</span>
+                  <textarea class="form-control" aria-label="With textarea"></textarea>
+                </div>
+              </form>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Stäng</button>
-              <button type="button" class="btn btn-primary">Spara</button>
+              <button type="submit" class="btn btn-primary">Spara</button>
             </div>
           </div>
         </div>
       </div>
 
       <!--Recepten-->
-      <div class="row">
+      <div id="recipes" class="row">
         <div class="card col-3" style="width: 18rem;">
           <!-- <img src="..." class="card-img-top" alt="..."> -->
           <div class="card-body">
@@ -76,6 +78,7 @@
           <div class="card-body">
             <h5 class="card-title">Kaffe Karlsson</h5>
             <p class="card-text">Kaffe, baileys, cointrau, grädde.</p>
+          
           </div>
         </div>  
       </div>
